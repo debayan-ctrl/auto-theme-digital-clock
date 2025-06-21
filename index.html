@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Themed Digital Clock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Orbitron', sans-serif;
+            transition: background-color 0.5s ease;
+            overflow: hidden;
+        }
+        
+        .clock-container {
+            perspective: 1000px;
+        }
+        
+        .clock {
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+        
+        .clock:hover {
+            transform: rotateY(10deg) rotateX(5deg) translateZ(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .digit {
+            display: inline-block;
+            position: relative;
+            text-align: center;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .digit:hover {
+            transform: translateY(-5px);
+        }
+        
+        .separator {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .dark-mode {
+            background-color: #121212;
+            color: #e2e8f0;
+        }
+        
+        .light-mode {
+            background-color: #f8f9fa;
+            color: #1a202c;
+        }
+        
+        .clock-bg-dark {
+            background-color: rgba(26, 32, 44, 0.8);
+        }
+        
+        .clock-bg-light {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="text-center p-8 rounded-2xl clock-container">
+        <div class="clock p-8 rounded-3xl shadow-xl" id="clock-face">
+            <div class="text-6xl md:text-8xl font-bold mb-6" id="time"></div>
+            <div class="text-xl md:text-2xl mb-8" id="date"></div>
+            <div id="greeting" class="text-3xl md:text-4xl font-semibold"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // Update theme based on time (6 AM to 6 PM is daytime)
+            const isDaytime = hours >= 6 && hours < 18;
+            updateTheme(isDaytime);
+            
+            // Format time with blinking separators
+            document.getElementById('time').innerHTML = `
+                <span class="digit">${String(hours).padStart(2, '0')}</span>
+                <span class="separator">:</span>
+                <span class="digit">${minutes}</span>
+                <span class="separator">:</span>
+                <span class="digit">${seconds}</span>
+            `;
+            
+            // Format date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', options);
+            
+            // Update greeting based on time of day
+            updateGreeting(hours);
+        }
+        
+        function updateGreeting(hours) {
+            const greeting = document.getElementById('greeting');
+            if (hours < 12) {
+                greeting.textContent = 'Good Morning';
+            } else if (hours < 18) {
+                greeting.textContent = 'Good Afternoon';
+            } else {
+                greeting.textContent = 'Good Evening';
+            }
+        }
+        
+        function updateTheme(isDaytime) {
+            const body = document.body;
+            const clockFace = document.getElementById('clock-face');
+            
+            if (isDaytime) {
+                body.classList.add('light-mode');
+                body.classList.remove('dark-mode');
+                clockFace.classList.add('clock-bg-light');
+                clockFace.classList.remove('clock-bg-dark');
+            } else {
+                body.classList.add('dark-mode');
+                body.classList.remove('light-mode');
+                clockFace.classList.add('clock-bg-dark');
+                clockFace.classList.remove('clock-bg-light');
+            }
+        }
+        
+        // Update clock immediately and then every second
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
